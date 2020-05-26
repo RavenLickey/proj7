@@ -3,7 +3,7 @@ void
 AutoCorrelate( global const float *dA, global float *dSums )
 {
 	int Size = get_global_size( 0 );	// the dA size is actually twice this big
-        int gid  = get_global_id( 0 );
+  int gid  = get_global_id( 0 );
 	int shift = gid;
 
 	float sum = 0.;

@@ -12,11 +12,10 @@
 #include "CL/cl.h"
 #include "CL/cl_platform.h"
 
-const char* CL_FILE_NAME = { "project7b.cl" };
+const char*			CL_FILE_NAME = { "project7b.cl" };
 const float			TOL = 0.0001f;
 
 void				Wait(cl_command_queue);
-int				LookAtTheBits(float);
 
 #ifndef LOCAL_SIZE
 #define	LOCAL_SIZE		64
@@ -24,6 +23,18 @@ int				LookAtTheBits(float);
 
 int main()
 {
+	FILE* tp;
+#ifdef WIN32
+	errno_t err = fopen_s(&fp, CL_FILE_NAME, "r");
+	if (err != 0)
+#else
+	tp = fopen(CL_FILE_NAME, "r");
+	if (tp == NULL)
+#endif
+	{
+		fprintf(stderr, "Cannot open OpenCL source file '%s'\n", CL_FILE_NAME);
+		return 1;
+	}
 
 	FILE* fp = fopen("signal.txt", "r");
 	if (fp == NULL)
@@ -36,6 +47,7 @@ int main()
 
 	float* hA = new float[2 * Size];
 	float* hSums = new float[1 * Size];
+	int NUM_WORK_GROUPS = Size / LOCAL_SIZE;
 
 	for (int i = 0; i < Size; i++)
 	{
@@ -45,10 +57,10 @@ int main()
 	fclose(fp);
 
 	cl_int status;		// returned status from opencl calls
-				// test against CL_SUCCESS
+			// test against CL_SUCCESS
 
-	// get the platform id:
-	int NUM_WORK_GROUPS = Size / LOCAL_SIZE;
+// get the platform id:
+
 	cl_platform_id platform;
 	status = clGetPlatformIDs(1, &platform, NULL);
 	if (status != CL_SUCCESS)
@@ -76,19 +88,15 @@ int main()
 	if (status != CL_SUCCESS)
 		fprintf(stderr, "clEnqueueWriteBuffer failed (1)\n");
 
-	status = clEnqueueWriteBuffer(cmdQueue, dSums, CL_FALSE, 0, 1 * Size * sizeof(cl_float), NULL, 0, NULL, NULL);
-	if (status != CL_SUCCESS)
-		fprintf(stderr, "clEnqueueWriteBuffer failed (2)\n");
-
 	Wait(cmdQueue);
 
-	fseek(fp, 0, SEEK_END);
-	size_t fileSize = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
+	fseek(tp, 0, SEEK_END);
+	size_t fileSize = ftell(tp);
+	fseek(tp, 0, SEEK_SET);
 	char* clProgramText = new char[fileSize + 1];		// leave room for '\0'
-	size_t n = fread(clProgramText, 1, fileSize, fp);
+	size_t n = fread(clProgramText, 1, fileSize, tp);
 	clProgramText[fileSize] = '\0';
-	fclose(fp);
+	fclose(tp);
 	if (n != fileSize)
 		fprintf(stderr, "Expected to read %d bytes read from '%s' -- actually read %d.\n", fileSize, CL_FILE_NAME, n);
 
