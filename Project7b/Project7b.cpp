@@ -36,6 +36,24 @@ int main()
 		return 1;
 	}
 
+
+	cl_int status;		// returned status from opencl calls
+			// test against CL_SUCCESS
+
+// get the platform id:
+
+	cl_platform_id platform;
+	status = clGetPlatformIDs(1, &platform, NULL);
+	if (status != CL_SUCCESS)
+		fprintf(stderr, "clGetPlatformIDs failed (2)\n");
+
+	// get the device id:
+
+	cl_device_id device;
+	status = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
+	if (status != CL_SUCCESS)
+		fprintf(stderr, "clGetDeviceIDs failed (2)\n");
+
 	FILE* fp = fopen("signal.txt", "r");
 	if (fp == NULL)
 	{
@@ -55,23 +73,6 @@ int main()
 		hA[i + Size] = hA[i];		// duplicate the array
 	}
 	fclose(fp);
-
-	cl_int status;		// returned status from opencl calls
-			// test against CL_SUCCESS
-
-// get the platform id:
-
-	cl_platform_id platform;
-	status = clGetPlatformIDs(1, &platform, NULL);
-	if (status != CL_SUCCESS)
-		fprintf(stderr, "clGetPlatformIDs failed (2)\n");
-
-	// get the device id:
-
-	cl_device_id device;
-	status = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
-	if (status != CL_SUCCESS)
-		fprintf(stderr, "clGetDeviceIDs failed (2)\n");
 
 	cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &status);
 	if (status != CL_SUCCESS)
