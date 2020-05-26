@@ -21,7 +21,7 @@ void				Wait(cl_command_queue);
 #define	LOCAL_SIZE		64
 #endif
 
-int main()
+int main( int argc, char *argv[ ])
 {
 	FILE* tp;
 #ifdef WIN32
@@ -35,7 +35,6 @@ int main()
 		fprintf(stderr, "Cannot open OpenCL source file '%s'\n", CL_FILE_NAME);
 		return 1;
 	}
-
 
 	cl_int status;		// returned status from opencl calls
 			// test against CL_SUCCESS
@@ -83,7 +82,11 @@ int main()
 		fprintf(stderr, "clCreateCommandQueue failed\n");
 
 	cl_mem dA = clCreateBuffer(context, CL_MEM_READ_ONLY, 2 * Size * sizeof(cl_float), NULL, &status);
+	if (status != CL_SUCCESS)
+		fprintf(stderr, "clCreateBuffer failed (1)\n");
 	cl_mem dSums = clCreateBuffer(context, CL_MEM_WRITE_ONLY, 1 * Size * sizeof(cl_float), NULL, &status);
+	if (status != CL_SUCCESS)
+		fprintf(stderr, "clCreateBuffer failed (2)\n");
 
 	status = clEnqueueWriteBuffer(cmdQueue, dA, CL_FALSE, 0, 2 * Size * sizeof(cl_float), hA, 0, NULL, NULL);
 	if (status != CL_SUCCESS)
@@ -129,7 +132,11 @@ int main()
 		fprintf(stderr, "clCreateKernel failed\n");
 
 	status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &dA);
+	if (status != CL_SUCCESS)
+		fprintf(stderr, "clSetKernelArg failed (1)\n");
 	status = clSetKernelArg(kernel, 1, sizeof(cl_mem), &dSums);
+	if (status != CL_SUCCESS)
+		fprintf(stderr, "clSetKernelArg failed (2)\n");
 
 	size_t globalWorkSize[3] = { Size,         1, 1 };
 	size_t localWorkSize[3] = { LOCAL_SIZE,   1, 1 };
